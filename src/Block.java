@@ -1,3 +1,5 @@
+import util.StringUtil;
+
 import java.time.LocalDateTime;
 import java.util.Date;
 
@@ -14,9 +16,17 @@ public class Block {
 
     private Long timeStamp;
 
-    public Block(String data, String previousHash, Long timeStamp) {
-        this.data=data;
-        this.previousHash=previousHash;
-        this.timeStamp= System.currentTimeMillis();
+    public Block(String data, String previousHash) {
+        this.data = data;
+        this.previousHash = previousHash;
+        this.timeStamp = System.currentTimeMillis();
+        this.hash = calculateHash();
+
+    }
+
+    public String calculateHash() {
+        String calculatedHash = StringUtil.sha256Encrypt(previousHash + data + Long.toString(timeStamp) + data);
+        return calculatedHash;
+
     }
 }
