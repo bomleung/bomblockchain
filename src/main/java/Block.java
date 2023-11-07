@@ -1,7 +1,5 @@
 import util.StringUtil;
 
-import java.time.LocalDateTime;
-import java.util.Date;
 
 /**
  * @author bom
@@ -16,6 +14,8 @@ public class Block {
 
     private Long timeStamp;
 
+    private int nonce;
+
     public Block(String data, String previousHash) {
         this.data = data;
         this.previousHash = previousHash;
@@ -25,8 +25,22 @@ public class Block {
     }
 
     public String calculateHash() {
-        String calculatedHash = StringUtil.sha256Encrypt(previousHash + data + Long.toString(timeStamp) + data);
+        String calculatedHash = StringUtil.sha256Encrypt(
+                previousHash +
+                        Integer.toString(nonce) +
+                        data +
+                        Long.toString(timeStamp));
         return calculatedHash;
 
+    }
+
+    public void mineBlock(int difficulty) {
+        //target --> 0000
+        String target = new String(new char[difficulty]).replace('\0', '0');
+        while (!hash.substring(0, difficulty).equals(target)) {
+            nonce++;
+            hash = calculateHash();
+        }
+        System.out.println("Block mined!: " + hash);
     }
 }

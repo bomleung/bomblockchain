@@ -1,17 +1,62 @@
+
+import java.util.ArrayList;
+
+import com.google.gson.*;
+
 /**
  * @author bom
  * @date 2023/11/07
  **/
 public class BomChain {
+
+    public static int difficulty = 5;
+
+    public static ArrayList<Block> blockChain = new ArrayList<Block>();
+
     public static void main(String[] args) {
-        Block firstBlock = new Block("I am first block", "0");
-        System.out.println("First Block's Hash: " + firstBlock.hash);
 
-        Block secondBlock = new Block("I am second block", firstBlock.hash);
-        System.out.println("Second Block's Hash: " + secondBlock.hash);
+        blockChain.add(new Block("I am first block", "0"));
+        System.out.println("Trying to mine block 1...");
+        blockChain.get(0).mineBlock(difficulty);
 
-        Block thirdBlock = new Block("I am third block", secondBlock.hash);
-        System.out.println("Third Block's Hash: " + thirdBlock.hash);
+        blockChain.add(new Block("I am second block", blockChain.get(blockChain.size() - 1).hash));
+        System.out.println("Trying to mine block 2...");
+        blockChain.get(1).mineBlock(difficulty);
 
+        blockChain.add(new Block("I am third block", blockChain.get(blockChain.size() - 1).hash));
+        System.out.println("Trying to mine block 3...");
+        blockChain.get(2).mineBlock(difficulty);
+
+        System.out.println("\bBlockChain is Valid: " + isChainValid());
+
+
+        String blockChainJson = new GsonBuilder().setPrettyPrinting().create().toJson(blockChain);
+        System.out.println("\nThe block chain: ");
+        System.out.println(blockChainJson);
+
+    }
+
+    public static Boolean isChainValid() {
+        Block currentBlock;
+        Block previousBlock;
+        String hashTarget = new String(new char[difficulty]).replace('\0', '0');
+
+        for (int i = 1; i < blockChain.size(); i++) {
+            currentBlock = blockChain.get(i);
+            previousBlock = blockChain.get(i - 1);
+            if (!currentBlock.hash.equals(currentBlock.calculateHash())) {
+                System.out.println("Current Hash not equal!");
+                return false;
+            }
+            if (!previousBlock.hash.equals(currentBlock.previousHash)) {
+                System.out.println("Previous Hash not equal!");
+                return false;
+            }
+            if (!currentBlock.hash.substring(0, difficulty).equals(hashTarget)) {
+                System.out.println("This Block hasn't mined");
+                return false;
+            }
+        }
+        return true;
     }
 }
