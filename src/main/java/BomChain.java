@@ -1,7 +1,11 @@
 
+import java.security.Security;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import com.google.gson.*;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import util.StringUtil;
 
 /**
  * @author bom
@@ -9,30 +13,51 @@ import com.google.gson.*;
  **/
 public class BomChain {
 
+    public static float minimumTransaction = 0.1f;
     public static int difficulty = 5;
 
     public static ArrayList<Block> blockChain = new ArrayList<Block>();
 
+    public static Wallet walletA;
+
+    public static Wallet walletB;
+
+    public static HashMap<String, TransactionOutPut> UTXOS = new HashMap<String, TransactionOutPut>();
+
+
     public static void main(String[] args) {
 
-        blockChain.add(new Block("I am first block", "0"));
-        System.out.println("Trying to mine block 1...");
-        blockChain.get(0).mineBlock(difficulty);
+        Security.addProvider(new BouncyCastleProvider());
+        Wallet walletA = new Wallet();
+        Wallet walletB = new Wallet();
+        System.out.println("Private and public keys:");
+        System.out.println(StringUtil.getStringFromKey(walletA.privateKey));
+        System.out.println(StringUtil.getStringFromKey(walletA.publicKey));
 
-        blockChain.add(new Block("I am second block", blockChain.get(blockChain.size() - 1).hash));
-        System.out.println("Trying to mine block 2...");
-        blockChain.get(1).mineBlock(difficulty);
+        Transaction transaction = new Transaction(walletA.publicKey, walletB.publicKey, 5, null);
+        transaction.generateSignature(walletA.privateKey);
 
-        blockChain.add(new Block("I am third block", blockChain.get(blockChain.size() - 1).hash));
-        System.out.println("Trying to mine block 3...");
-        blockChain.get(2).mineBlock(difficulty);
+        System.out.println("Is signature verified");
+        System.out.println(transaction.verifySignature());
 
-        System.out.println("\bBlockChain is Valid: " + isChainValid());
-
-
-        String blockChainJson = new GsonBuilder().setPrettyPrinting().create().toJson(blockChain);
-        System.out.println("\nThe block chain: ");
-        System.out.println(blockChainJson);
+//        blockChain.add(new Block("I am first block", "0"));
+//        System.out.println("Trying to mine block 1...");
+//        blockChain.get(0).mineBlock(difficulty);
+//
+//        blockChain.add(new Block("I am second block", blockChain.get(blockChain.size() - 1).hash));
+//        System.out.println("Trying to mine block 2...");
+//        blockChain.get(1).mineBlock(difficulty);
+//
+//        blockChain.add(new Block("I am third block", blockChain.get(blockChain.size() - 1).hash));
+//        System.out.println("Trying to mine block 3...");
+//        blockChain.get(2).mineBlock(difficulty);
+//
+//        System.out.println("\bBlockChain is Valid: " + isChainValid());
+//
+//
+//        String blockChainJson = new GsonBuilder().setPrettyPrinting().create().toJson(blockChain);
+//        System.out.println("\nThe block chain: ");
+//        System.out.println(blockChainJson);
 
     }
 

@@ -10,6 +10,7 @@ import java.util.ArrayList;
  **/
 public class Transaction {
 
+
     public String transactionId;
     public PublicKey sender;
     public PublicKey receiver;
@@ -17,7 +18,7 @@ public class Transaction {
     public byte[] signature;
 
     public ArrayList<TransactionInput> inputs = new ArrayList<TransactionInput>();
-    public ArrayList<TransactionOutput> outputs = new ArrayList<TransactionOutput>();
+    public ArrayList<TransactionOutPut> outputs = new ArrayList<TransactionOutPut>();
 
     public static int sequence = 0;
 
@@ -45,5 +46,58 @@ public class Transaction {
     public boolean verifySignature() {
         String data = StringUtil.getStringFromKey(sender) + StringUtil.getStringFromKey(receiver);
         return StringUtil.verifyECDSASig(sender, data, signature);
+    }
+
+    public boolean processTransaction() {
+        if (verifySignature() == false) {
+            System.out.println("#Transaction Signature failed to verify");
+            return false;
+        }
+
+        for (TransactionInput i : inputs) {
+            i.UTXO = BomChain.UTXOS.get(i.transactionOutPutId);
+        }
+
+        if (getInputsValue() < BomChain.minimumTransaction) {
+            System.out.println("#Transaction Inputs too small:" + getInputsValue());
+            return false;
+        }
+
+        float leftOver = getInputsValue();
+        transactionId = calculateHash();
+        outputs.add(new TransactionOutPut(this.receiver, value, transactionId));
+        outputs.add(new TransactionOutPut(this.sender, leftOver, transactionId));
+
+        for (TransactionOutPut o : outputs) {
+            BomChain.UTXOS.put(o.id, o);
+        }
+
+        for (TransactionInput i : inputs) {
+            if (i.UTXO == null) {
+                continue;
+            }
+            BomChain.UTXOS.remove(i.UTXO.id);
+        }
+        return true;
+
+    }
+
+    public float getInputsValue() {
+        float total = 0;
+        for (TransactionInput i : inputs) {
+            if (i.UTXO == null) {
+                continue;
+            }
+            total += i.UTXO.value;
+        }
+        return total;
+    }
+
+    public float getOutPutsValue() {
+        float total = 0;
+        for (TransactionOutPut o : outputs) {
+            total += o.value;
+        }
+        return total;
     }
 }
